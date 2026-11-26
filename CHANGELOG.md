@@ -5,6 +5,15 @@ the `## <version>` section matching the tag it is about to cut, and refuses to
 release without one - write the entry here first, in plain user-facing
 language (what changed and why they care, not commit subjects).
 
+## 1.2.1 - 2026-11-26
+
+- The install command no longer stops at step 3 with "could not detect your
+  SteamID64" on a Mac where more than one Steam account has signed in. It now
+  uses the account Steam signs in to by itself and says which one it picked. If
+  it still can't tell, it says what to do instead of leaving you stuck.
+- If an install stops partway, pasting the install command again now starts the
+  setup over. Before, it said the game was already up to date and did nothing.
+
 ## 1.2.0 - 2026-11-10
 
 - Insaniquarium now runs natively on Intel Macs as well as Apple Silicon, on
