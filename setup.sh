@@ -170,8 +170,13 @@ install_scripts() {
   atomic_copy "$SP/sme/appinfo.py" "$PORTHOME/sme/appinfo.py"
   if [ -f "$SP/sme/NOTICE" ]; then atomic_copy "$SP/sme/NOTICE" "$PORTHOME/sme/NOTICE"; fi
   chmod +x "$PORTHOME"/*.sh
-  # Record which release this install came from (drives update.sh's staleness
-  # check). Present in release tarballs; absent in ad-hoc/dev builds.
+}
+
+# Record which release this install came from (drives update.sh's "already up
+# to date" check). Present in release tarballs; absent in ad-hoc/dev builds.
+# A first install writes it only after step 5, so an install that stopped
+# partway is never mistaken for a finished one.
+record_release() {
   if [ -f "$BASE/RELEASE" ]; then atomic_copy "$BASE/RELEASE" "$PORTHOME/RELEASE"; fi
 }
 
@@ -242,7 +247,8 @@ MSG
     echo "Game files not in '$GAMEDIR' yet (attempt $attempt) - retrying."
   done
   die "Steam didn't download the game files. Options:
-  - $RERUN_HINT to try again
+  - check that Steam signs in to the account with Insaniquarium in its
+    Library, then $RERUN_HINT
   - owners (not family-shared): ./setup.sh --console-fetch
   - last resort: ./setup.sh --assets <path to an Insaniquarium Deluxe folder>"
 }
@@ -411,6 +417,7 @@ update_install() {
 
   say "[2/3] Refreshing helper scripts + durability agent"
   install_scripts
+  record_release
   "$PORTHOME/install-durability.sh" || echo "warning: could not reload the durability agent (run ./setup.sh verify)"
 
   say "[3/3] Verifying"
@@ -470,4 +477,5 @@ inject_appinfo
 acquire_assets
 if [ "$MODE" = payload ]; then graft_assets; else build_from_source; fi
 finalize_steam
+record_release
 manual_tail

@@ -68,10 +68,21 @@ if ! xcode-select -p >/dev/null 2>&1; then
   echo "command into Terminal again."
   exit 1
 fi
+# Installed = the app AND the game files inside it. A first install that
+# stopped before Steam delivered the game files leaves an app without them;
+# count that as not installed, so pasting the command again reruns the setup.
+has_game() {
+  local r="$APP/Contents/Resources" d
+  [ -x "$APP/Contents/MacOS/insaniquarium" ] && [ -f "$r/properties/resources.xml" ] || return 1
+  for d in images sounds music fishsongs data properties; do [ -d "$r/$d" ] || return 1; done
+}
 INSTALLED=0
-[ -x "$APP/Contents/MacOS/insaniquarium" ] && INSTALLED=1
+if has_game; then INSTALLED=1; fi
 if [ "$INSTALLED" = 0 ] && [ -n "$YES" ]; then
   die "Insaniquarium isn't installed at $APP; a first install has to run in Terminal"
+fi
+if [ "$INSTALLED" = 0 ] && [ -e "$APP" ]; then
+  echo "note: the last install didn't finish - running the setup again"
 fi
 if pgrep -f "$GAME_PGREP" >/dev/null; then
   die "Insaniquarium is running - quit the game first (Steam can stay open)"
